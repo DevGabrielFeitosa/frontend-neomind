@@ -236,33 +236,3 @@ Edite o arquivo `app.js`:
     // ...
 })
 ```
-
-### Personalizar Estilos
-Edite o arquivo `css/style.css` para customizar:
-- Cores do tema
-- Espaçamentos
-- Tipografia
-- Animações
-
-## 📞 Suporte e Contribuição
-
-### Reportar Problemas
-- Descreva o problema detalhadamente
-- Inclua passos para reproduzir
-- Informe navegador e versão
-
-### Melhorias Futuras
-- [ ] Paginação da lista de fornecedores
-- [ ] Exportação para Excel/PDF
-- [ ] Filtros avançados
-- [ ] Histórico de alterações
-- [ ] Upload de logo do fornecedor
-- [ ] Integração com CEP para endereços
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
-**Desenvolvido com ❤️ para Neomind**
