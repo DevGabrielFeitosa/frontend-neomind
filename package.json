@@ -1,0 +1,43 @@
+{
+  "name": "fornecedores-frontend",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de fornecedores - Frontend com AngularJS e Bootstrap",
+  "main": "index.html",
+  "scripts": {
+    "start": "node proxy-server.js",
+    "start-simple": "npx http-server -p 3000 -o",
+    "dev": "node proxy-server.js",
+    "build": "echo 'Build não necessário para aplicação estática'",
+    "test": "echo 'Testes não configurados ainda'",
+    "serve": "npx http-server -p 3000",
+    "proxy": "node proxy-server.js"
+  },
+  "keywords": [
+    "angularjs",
+    "bootstrap",
+    "fornecedores",
+    "crud",
+    "frontend",
+    "neomind"
+  ],
+  "author": "Neomind",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neomind/fornecedores-frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/neomind/fornecedores-frontend/issues"
+  },
+  "homepage": "https://github.com/neomind/fornecedores-frontend#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
