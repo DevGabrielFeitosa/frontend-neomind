@@ -77,24 +77,73 @@
     <div class="modal fade" id="confirmModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">
-                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                        Confirmação
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Exclusão
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    {{confirmMessage}}
+                    <div class="text-center mb-4">
+                        <i class="fas fa-trash-alt fa-4x text-danger mb-3"></i>
+                        <h6 class="text-danger">Esta ação não pode ser desfeita!</h6>
+                    </div>
+
+                    <div ng-if="fornecedorToDelete">
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading mb-3">
+                                <i class="fas fa-building me-2"></i>
+                                Você está prestes a excluir o fornecedor:
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p class="mb-2">
+                                        <strong>Nome:</strong>
+                                        <span class="text-primary">{{fornecedorToDelete.name}}</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>CNPJ:</strong>
+                                        <code>{{fornecedorToDelete.cnpj || 'Não informado'}}</code>
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Email:</strong>
+                                        <span class="text-info">{{fornecedorToDelete.email || 'Não informado'}}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-center text-muted mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tem certeza que deseja continuar?
+                        </p>
+                    </div>
+
+                    <!-- Fallback para mensagem de texto simples -->
+                    <div ng-if="!fornecedorToDelete && confirmMessage">
+                        <p class="text-center" style="white-space: pre-line;" ng-bind="confirmMessage"></p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-danger" ng-click="confirmAction()" data-bs-dismiss="modal">
-                        <i class="fas fa-check me-1"></i>
-                        Confirmar
+                    <button type="button"
+                            class="btn btn-danger"
+                            ng-click="confirmAction()"
+                            data-bs-dismiss="modal"
+                            ng-disabled="deletingInProgress">
+                        <span ng-if="!deletingInProgress">
+                            <i class="fas fa-trash me-1"></i>
+                            Sim, Excluir
+                        </span>
+                        <span ng-if="deletingInProgress">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Excluindo...
+                        </span>
                     </button>
                 </div>
             </div>
@@ -112,5 +161,23 @@
     <script src="app.js"></script>
     <script src="services/fornecedor.service.js"></script>
     <script src="controllers/fornecedor.controller.js"></script>
+
+    <!-- Modal Event Handlers -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.addEventListener('hidden.bs.modal', function () {
+                    // Limpa os dados do modal quando ele é fechado
+                    var scope = angular.element(confirmModal).scope();
+                    if (scope && scope.clearModalData) {
+                        scope.$apply(function() {
+                            scope.clearModalData();
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,9 +1,7 @@
-// Controller principal para gerenciamento de fornecedores
 angular.module('fornecedoresApp')
     .controller('FornecedorController', ['$scope', '$routeParams', '$location', 'FornecedorService', 
         function($scope, $routeParams, $location, FornecedorService) {
         
-        // Inicialização das variáveis
         $scope.fornecedores = [];
         $scope.fornecedor = {};
         $scope.loading = false;
@@ -11,16 +9,14 @@ angular.module('fornecedoresApp')
         $scope.alert = { show: false };
         $scope.confirmMessage = '';
         $scope.confirmAction = null;
+        $scope.fornecedorToDelete = null;
+        $scope.deletingInProgress = false;
         
-        // Verifica se está editando baseado na rota
         if ($routeParams.id) {
             $scope.isEditing = true;
             $scope.fornecedorId = parseInt($routeParams.id);
         }
         
-        /**
-         * Inicializa o controller baseado na rota atual
-         */
         $scope.init = function() {
             var path = $location.path();
             
@@ -33,9 +29,6 @@ angular.module('fornecedoresApp')
             }
         };
         
-        /**
-         * Carrega a lista de fornecedores
-         */
         $scope.loadFornecedores = function() {
             $scope.loading = true;
             
@@ -54,9 +47,6 @@ angular.module('fornecedoresApp')
                 });
         };
         
-        /**
-         * Inicializa o formulário para novo fornecedor
-         */
         $scope.initForm = function() {
             $scope.fornecedor = {
                 name: '',
@@ -67,9 +57,6 @@ angular.module('fornecedoresApp')
             $scope.isEditing = false;
         };
         
-        /**
-         * Carrega fornecedor para edição
-         */
         $scope.loadFornecedorForEdit = function() {
             if (!$scope.fornecedorId) {
                 $scope.showAlert('danger', 'ID do fornecedor não informado', 'exclamation-triangle');
@@ -91,9 +78,6 @@ angular.module('fornecedoresApp')
                 });
         };
         
-        /**
-         * Salva o fornecedor (criar ou atualizar)
-         */
         $scope.saveFornecedor = function() {
             if (!$scope.validateForm()) {
                 return;
@@ -114,7 +98,6 @@ angular.module('fornecedoresApp')
                     var message = $scope.isEditing ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!';
                     $scope.showAlert('success', message, 'check-circle');
                     
-                    // Redireciona para a lista após 2 segundos
                     setTimeout(function() {
                         $scope.$apply(function() {
                             $location.path('/lista');
@@ -127,48 +110,60 @@ angular.module('fornecedoresApp')
                 });
         };
         
-        /**
-         * Confirma e executa a exclusão de um fornecedor
-         */
         $scope.deleteFornecedor = function(fornecedor) {
-            $scope.confirmMessage = 'Tem certeza que deseja excluir o fornecedor "' + fornecedor.name + '"?';
+            console.log('deleteFornecedor chamado com:', fornecedor);
+
+            // Armazena o fornecedor que será deletado para exibir no modal
+            $scope.fornecedorToDelete = angular.copy(fornecedor);
+            $scope.deletingInProgress = false;
+
+            // Mensagem de fallback caso o objeto não esteja disponível
+            $scope.confirmMessage = 'Tem certeza que deseja excluir o fornecedor "' + fornecedor.name + '"?\n\n' +
+                                   'CNPJ: ' + (fornecedor.cnpj || 'Não informado') + '\n' +
+                                   'Email: ' + (fornecedor.email || 'Não informado') + '\n\n' +
+                                   'Esta ação não pode ser desfeita.';
+
+            // Define a ação que será executada ao confirmar
             $scope.confirmAction = function() {
+                console.log('confirmAction executada para ID:', fornecedor.id);
                 $scope.executeDelete(fornecedor.id);
             };
-            
-            // Abre o modal de confirmação
+
+            // Exibe o modal
             var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
             modal.show();
         };
         
-        /**
-         * Executa a exclusão do fornecedor
-         */
         $scope.executeDelete = function(id) {
+            console.log('executeDelete chamado com ID:', id);
             $scope.loading = true;
-            
+            $scope.deletingInProgress = true;
+
             FornecedorService.delete(id)
                 .then(function() {
+                    console.log('Fornecedor deletado com sucesso');
                     $scope.loading = false;
+                    $scope.deletingInProgress = false;
                     $scope.showAlert('success', 'Fornecedor excluído com sucesso!', 'check-circle');
                     $scope.loadFornecedores();
+
+                    // Limpa as variáveis do modal
+                    $scope.fornecedorToDelete = null;
+                    $scope.confirmMessage = '';
+                    $scope.confirmAction = null;
                 })
                 .catch(function(error) {
+                    console.error('Erro ao deletar fornecedor:', error);
                     $scope.loading = false;
+                    $scope.deletingInProgress = false;
                     $scope.showAlert('danger', 'Erro ao excluir fornecedor: ' + (error.data?.error || error.message), 'exclamation-triangle');
                 });
         };
         
-        /**
-         * Navega para a página de edição
-         */
         $scope.editFornecedor = function(id) {
             $location.path('/editar/' + id);
         };
         
-        /**
-         * Valida o formulário
-         */
         $scope.validateForm = function() {
             var validation = FornecedorService.validate($scope.fornecedor);
             
@@ -179,10 +174,7 @@ angular.module('fornecedoresApp')
             
             return true;
         };
-        
-        /**
-         * Exibe um alerta
-         */
+
         $scope.showAlert = function(type, message, icon) {
             $scope.alert = {
                 show: true,
@@ -191,7 +183,6 @@ angular.module('fornecedoresApp')
                 icon: icon || 'info-circle'
             };
             
-            // Auto-hide após 5 segundos para alertas de sucesso e info
             if (type === 'success' || type === 'info') {
                 setTimeout(function() {
                     $scope.$apply(function() {
@@ -201,23 +192,22 @@ angular.module('fornecedoresApp')
             }
         };
         
-        /**
-         * Fecha o alerta
-         */
         $scope.closeAlert = function() {
             $scope.alert.show = false;
         };
+
+        // Função para limpar dados do modal quando ele for fechado
+        $scope.clearModalData = function() {
+            $scope.fornecedorToDelete = null;
+            $scope.confirmMessage = '';
+            $scope.confirmAction = null;
+            $scope.deletingInProgress = false;
+        };
         
-        /**
-         * Cancela a operação e volta para a lista
-         */
         $scope.cancel = function() {
             $location.path('/lista');
         };
         
-        /**
-         * Testa a conexão com a API
-         */
         $scope.testConnection = function() {
             $scope.loading = true;
             
@@ -232,12 +222,10 @@ angular.module('fornecedoresApp')
                 });
         };
         
-        // Listener para erros HTTP globais
         $scope.$on('httpError', function(event, error) {
             $scope.showAlert('danger', error.message, 'exclamation-triangle');
         });
         
-        // Inicializa o controller
         $scope.init();
         
     }]);

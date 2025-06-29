@@ -1,8 +1,5 @@
-// Configuração principal do AngularJS
 angular.module('fornecedoresApp', ['ngRoute'])
     .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-        
-        // Configuração das rotas
         $routeProvider
             .when('/lista', {
                 templateUrl: 'views/lista-fornecedores.html',
@@ -21,7 +18,6 @@ angular.module('fornecedoresApp', ['ngRoute'])
             });
     }])
     
-    // Configurações globais da aplicação
     .constant('API_CONFIG', {
         BASE_URL: 'http://localhost:8080/api',
         ENDPOINTS: {
@@ -30,62 +26,77 @@ angular.module('fornecedoresApp', ['ngRoute'])
         }
     })
     
-    // Filtros customizados
     .filter('cnpjFormat', function() {
         return function(cnpj) {
             if (!cnpj) return '';
-            
-            // Remove caracteres não numéricos
-            var numbers = cnpj.replace(/\D/g, '');
-            
-            // Aplica a máscara XX.XXX.XXX/XXXX-XX
+
+            if (cnpj.indexOf('.') !== -1 || cnpj.indexOf('/') !== -1 || cnpj.indexOf('-') !== -1) {
+                return cnpj;
+            }
+
+            var numbers = cnpj.toString().replace(/\D/g, '');
+
             if (numbers.length === 14) {
                 return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            } else if (numbers.length === 11) {
+                return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
             }
-            
+
             return cnpj;
         };
     })
     
-    // Diretivas customizadas
     .directive('cnpjMask', function() {
         return {
             restrict: 'A',
             require: 'ngModel',
             link: function(scope, element, attrs, ctrl) {
-                element.on('input', function() {
-                    var value = element.val().replace(/\D/g, '');
+
+                function formatCNPJ(value) {
+                    if (!value) return '';
+
+                    var numbers = value.replace(/\D/g, '');
                     var formattedValue = '';
-                    
-                    if (value.length > 0) {
-                        if (value.length <= 2) {
-                            formattedValue = value;
-                        } else if (value.length <= 5) {
-                            formattedValue = value.replace(/(\d{2})(\d+)/, '$1.$2');
-                        } else if (value.length <= 8) {
-                            formattedValue = value.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
-                        } else if (value.length <= 12) {
-                            formattedValue = value.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+
+                    if (numbers.length > 0) {
+                        if (numbers.length <= 2) {
+                            formattedValue = numbers;
+                        } else if (numbers.length <= 5) {
+                            formattedValue = numbers.replace(/(\d{2})(\d+)/, '$1.$2');
+                        } else if (numbers.length <= 8) {
+                            formattedValue = numbers.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+                        } else if (numbers.length <= 12) {
+                            formattedValue = numbers.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
                         } else {
-                            formattedValue = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
+                            formattedValue = numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
                         }
                     }
-                    
-                    if (formattedValue !== element.val()) {
+
+                    return formattedValue;
+                }
+
+                element.on('input', function() {
+                    var currentValue = element.val();
+                    var formattedValue = formatCNPJ(currentValue);
+
+                    if (formattedValue !== currentValue) {
                         element.val(formattedValue);
                         ctrl.$setViewValue(formattedValue);
+                        ctrl.$render();
                     }
+                });
+
+                ctrl.$formatters.push(function(value) {
+                    return formatCNPJ(value);
                 });
             }
         };
     })
     
-    // Interceptor para tratamento de erros HTTP
     .config(['$httpProvider', function($httpProvider) {
         $httpProvider.interceptors.push(['$q', '$rootScope', function($q, $rootScope) {
             return {
                 'request': function(config) {
-                    // Adiciona headers padrão
                     config.headers = config.headers || {};
                     if (config.method === 'POST' || config.method === 'PUT') {
                         config.headers['Content-Type'] = 'application/json';
@@ -96,7 +107,6 @@ angular.module('fornecedoresApp', ['ngRoute'])
                 },
                 
                 'responseError': function(rejection) {
-                    // Tratamento global de erros
                     var errorMessage = 'Erro desconhecido';
                     
                     switch (rejection.status) {
@@ -117,7 +127,6 @@ angular.module('fornecedoresApp', ['ngRoute'])
                             errorMessage = rejection.data?.error || 'Erro na comunicação com o servidor';
                     }
                     
-                    // Emite evento global de erro
                     $rootScope.$broadcast('httpError', {
                         status: rejection.status,
                         message: errorMessage
@@ -129,11 +138,8 @@ angular.module('fornecedoresApp', ['ngRoute'])
         }]);
     }])
     
-    // Controller principal da aplicação
     .run(['$rootScope', '$location', function($rootScope, $location) {
-        // Configurações iniciais
         $rootScope.$on('$routeChangeStart', function() {
-            // Pode adicionar lógica de autenticação aqui se necessário
         });
         
         $rootScope.$on('$routeChangeError', function() {

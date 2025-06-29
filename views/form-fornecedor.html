@@ -1,7 +1,5 @@
-<!-- Formulário de Fornecedor -->
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <!-- Header da página -->
         <div class="mb-4">
             <h2 class="mb-1">
                 <i class="fas fa-{{isEditing ? 'edit' : 'plus'}} text-primary me-2"></i>
@@ -12,7 +10,6 @@
             </p>
         </div>
 
-        <!-- Formulário -->
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -23,7 +20,6 @@
             <div class="card-body">
                 <form name="fornecedorForm" ng-submit="saveFornecedor()" novalidate>
                     
-                    <!-- Nome -->
                     <div class="mb-3">
                         <label for="name" class="form-label">
                             <i class="fas fa-building me-1"></i>
@@ -45,7 +41,6 @@
                         </div>
                     </div>
 
-                    <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">
                             <i class="fas fa-envelope me-1"></i>
@@ -68,7 +63,6 @@
                         </div>
                     </div>
 
-                    <!-- CNPJ -->
                     <div class="mb-3">
                         <label for="cnpj" class="form-label">
                             <i class="fas fa-id-card me-1"></i>
@@ -91,7 +85,6 @@
                         </div>
                     </div>
 
-                    <!-- Comentário -->
                     <div class="mb-4">
                         <label for="comment" class="form-label">
                             <i class="fas fa-comment me-1"></i>
@@ -105,11 +98,11 @@
                                   rows="3"
                                   maxlength="500"></textarea>
                         <div class="form-text">
-                            Máximo 500 caracteres. Caracteres restantes: {{500 - (fornecedor.comment ? fornecedor.comment.length : 0)}}
+                            <span>Máximo 500 caracteres. Caracteres restantes: </span>
+                            <span ng-bind="getCharactersRemaining()"></span>
                         </div>
                     </div>
 
-                    <!-- Botões de ação -->
                     <div class="d-flex justify-content-between">
                         <button type="button" 
                                 class="btn btn-outline-secondary" 
@@ -147,7 +140,6 @@
             </div>
         </div>
 
-        <!-- Informações adicionais -->
         <div class="card mt-4">
             <div class="card-header">
                 <h6 class="mb-0">
@@ -183,7 +175,6 @@
             </div>
         </div>
 
-        <!-- Preview dos dados (apenas em modo de edição) -->
         <div class="card mt-4" ng-show="isEditing && fornecedor.id">
             <div class="card-header">
                 <h6 class="mb-0">
@@ -194,24 +185,28 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>ID:</strong> 
-                        <span class="badge bg-secondary ms-2">{{fornecedor.id}}</span>
+                        <strong>ID:</strong>
+                        <span class="badge bg-secondary ms-2" ng-bind="fornecedor.id"></span>
                     </div>
                     <div class="col-md-6">
-                        <strong>Nome:</strong> {{fornecedor.name || 'Não informado'}}
+                        <strong>Nome:</strong>
+                        <span ng-bind="fornecedor.name || 'Não informado'"></span>
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <strong>Email:</strong> {{fornecedor.email || 'Não informado'}}
+                        <strong>Email:</strong>
+                        <span ng-bind="fornecedor.email || 'Não informado'"></span>
                     </div>
                     <div class="col-md-6">
-                        <strong>CNPJ:</strong> {{fornecedor.cnpj | cnpjFormat || 'Não informado'}}
+                        <strong>CNPJ:</strong>
+                        <span ng-bind="(fornecedor.cnpj | cnpjFormat) || 'Não informado'"></span>
                     </div>
                 </div>
                 <div class="row mt-2" ng-show="fornecedor.comment">
                     <div class="col-12">
-                        <strong>Comentário:</strong> {{fornecedor.comment}}
+                        <strong>Comentário:</strong>
+                        <span ng-bind="fornecedor.comment"></span>
                     </div>
                 </div>
             </div>
