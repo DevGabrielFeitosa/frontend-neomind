@@ -98,11 +98,11 @@ angular.module('fornecedoresApp', ['ngRoute'])
             return {
                 'request': function(config) {
                     config.headers = config.headers || {};
-                    if (config.method === 'POST' || config.method === 'PUT') {
+                    if (config.method === 'POST' || config.method === 'PUT' || config.method === 'DELETE') {
                         config.headers['Content-Type'] = 'application/json';
                     }
                     config.headers['Accept'] = 'application/json';
-                    
+
                     return config;
                 },
                 
