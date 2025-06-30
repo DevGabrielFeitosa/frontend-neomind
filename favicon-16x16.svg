@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Globe background with gradient -->
+  <defs>
+    <radialGradient id="globeGradient16" cx="0.3" cy="0.3">
+      <stop offset="0%" stop-color="#5BA3F5"/>
+      <stop offset="100%" stop-color="#2E5C8A"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="7" cy="7" r="6" fill="url(#globeGradient16)" stroke="#1A4A6B" stroke-width="0.5"/>
+
+  <!-- Globe grid lines (simplified for small size) -->
+  <g stroke="#FFFFFF" stroke-width="0.6" fill="none" opacity="0.9">
+    <!-- Main lines -->
+    <path d="M7 1 L7 13"/>
+    <line x1="1" y1="7" x2="13" y2="7"/>
+    <!-- Curved line -->
+    <path d="M4 7 Q7 3.5 10 7 Q7 10.5 4 7"/>
+  </g>
+
+  <!-- Cursor -->
+  <g transform="translate(9.5, 9.5)">
+    <!-- Cursor shadow -->
+    <path d="M0.5 0.5 L0.5 4.5 L2 3.5 L3 5 L3.5 4.5 L2.5 3 L4 3 Z" fill="#000000" opacity="0.4"/>
+
+    <!-- Cursor main -->
+    <path d="M0 0 L0 4 L1.5 3 L2.5 4.5 L3 4 L2 2.5 L3.5 2.5 Z" fill="#FFFFFF" stroke="#1A4A6B" stroke-width="0.3"/>
+
+    <!-- Cursor accent -->
+    <path d="M0.5 0.5 L0.5 3 L1.5 2.5 L2 3.5 L2.2 3.2 L1.8 2.2 L2.8 2.2 Z" fill="#FF6B6B"/>
+  </g>
+</svg>

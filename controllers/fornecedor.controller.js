@@ -1,6 +1,6 @@
 angular.module('fornecedoresApp')
-    .controller('FornecedorController', ['$scope', '$routeParams', '$location', 'FornecedorService', 
-        function($scope, $routeParams, $location, FornecedorService) {
+    .controller('FornecedorController', ['$scope', '$routeParams', '$location', '$timeout', 'FornecedorService',
+        function($scope, $routeParams, $location, $timeout, FornecedorService) {
         
         $scope.fornecedores = [];
         $scope.fornecedor = {};
@@ -9,6 +9,19 @@ angular.module('fornecedoresApp')
         $scope.alert = { show: false };
         $scope.confirmMessage = '';
         $scope.confirmAction = null;
+        $scope.currentFornecedorId = null;
+
+        $scope.confirmAction = function() {
+            var idToDelete = $scope.currentFornecedorId ||
+                           ($scope.fornecedorToDelete && $scope.fornecedorToDelete.id) ||
+                           window.currentDeleteId;
+
+            if (idToDelete) {
+                $scope.executeDelete(idToDelete);
+
+                window.currentDeleteId = null;
+            }
+        };
         $scope.fornecedorToDelete = null;
         $scope.deletingInProgress = false;
         
@@ -31,12 +44,12 @@ angular.module('fornecedoresApp')
         
         $scope.loadFornecedores = function() {
             $scope.loading = true;
-            
+
             FornecedorService.getAll()
                 .then(function(data) {
                     $scope.fornecedores = data;
                     $scope.loading = false;
-                    
+
                     if (data.length === 0) {
                         $scope.showAlert('info', 'Nenhum fornecedor cadastrado ainda.', 'info-circle');
                     }
@@ -111,52 +124,106 @@ angular.module('fornecedoresApp')
         };
         
         $scope.deleteFornecedor = function(fornecedor) {
-            console.log('deleteFornecedor chamado com:', fornecedor);
+            if (!fornecedor) {
+                $scope.showAlert('danger', 'Erro: Dados do fornecedor não encontrados', 'exclamation-triangle');
+                return;
+            }
 
-            // Armazena o fornecedor que será deletado para exibir no modal
+            if (!fornecedor.id) {
+                $scope.showAlert('danger', 'Erro: ID do fornecedor não encontrado', 'exclamation-triangle');
+                return;
+            }
+
             $scope.fornecedorToDelete = angular.copy(fornecedor);
             $scope.deletingInProgress = false;
 
-            // Mensagem de fallback caso o objeto não esteja disponível
-            $scope.confirmMessage = 'Tem certeza que deseja excluir o fornecedor "' + fornecedor.name + '"?\n\n' +
+            $scope.confirmMessage = 'Tem certeza que deseja excluir o fornecedor "' + (fornecedor.name || 'Sem nome') + '"?\n\n' +
                                    'CNPJ: ' + (fornecedor.cnpj || 'Não informado') + '\n' +
                                    'Email: ' + (fornecedor.email || 'Não informado') + '\n\n' +
                                    'Esta ação não pode ser desfeita.';
 
-            // Define a ação que será executada ao confirmar
-            $scope.confirmAction = function() {
-                console.log('confirmAction executada para ID:', fornecedor.id);
-                $scope.executeDelete(fornecedor.id);
-            };
+            $scope.currentFornecedorId = fornecedor.id;
+            window.currentDeleteId = fornecedor.id;
 
-            // Exibe o modal
-            var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            modal.show();
+            var modalElement = document.getElementById('confirmModal');
+            if (!modalElement) {
+                $scope.showAlert('danger', 'Erro: Modal de confirmação não encontrado', 'exclamation-triangle');
+                return;
+            }
+
+            if (typeof bootstrap === 'undefined') {
+                $scope.showAlert('danger', 'Erro: Bootstrap não carregado', 'exclamation-triangle');
+                return;
+            }
+
+            try {
+                var modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } catch (error) {
+                $scope.showAlert('danger', 'Erro ao exibir modal: ' + error.message, 'exclamation-triangle');
+            }
         };
         
         $scope.executeDelete = function(id) {
-            console.log('executeDelete chamado com ID:', id);
             $scope.loading = true;
             $scope.deletingInProgress = true;
 
             FornecedorService.delete(id)
-                .then(function() {
-                    console.log('Fornecedor deletado com sucesso');
+                .then(function(response) {
                     $scope.loading = false;
                     $scope.deletingInProgress = false;
+
+                    var modalElement = document.getElementById('confirmModal');
+                    if (modalElement && typeof bootstrap !== 'undefined') {
+                        var modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+
+                    // Remove o fornecedor da lista local imediatamente para feedback visual
+                    if ($scope.fornecedores && Array.isArray($scope.fornecedores)) {
+                        $scope.fornecedores = $scope.fornecedores.filter(function(f) {
+                            return f.id !== id;
+                        });
+                    }
+
                     $scope.showAlert('success', 'Fornecedor excluído com sucesso!', 'check-circle');
-                    $scope.loadFornecedores();
+
+                    // Recarrega a página após um pequeno delay para mostrar a mensagem de sucesso
+                    $timeout(function() {
+                        window.location.reload();
+                    }, 1500);
 
                     // Limpa as variáveis do modal
                     $scope.fornecedorToDelete = null;
                     $scope.confirmMessage = '';
-                    $scope.confirmAction = null;
+                    $scope.currentFornecedorId = null;
                 })
                 .catch(function(error) {
-                    console.error('Erro ao deletar fornecedor:', error);
                     $scope.loading = false;
                     $scope.deletingInProgress = false;
-                    $scope.showAlert('danger', 'Erro ao excluir fornecedor: ' + (error.data?.error || error.message), 'exclamation-triangle');
+
+                    var modalElement = document.getElementById('confirmModal');
+                    if (modalElement && typeof bootstrap !== 'undefined') {
+                        var modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+
+                    var errorMessage = 'Erro desconhecido';
+                    if (error.status === 0 || error.status === -1) {
+                        errorMessage = 'Erro de conexão com o servidor. Verifique se a API está rodando em http://localhost:8080';
+                    } else if (error.data && error.data.error) {
+                        errorMessage = error.data.error;
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    } else if (error.status) {
+                        errorMessage = 'Erro HTTP ' + error.status + ': ' + (error.statusText || 'Erro no servidor');
+                    }
+
+                    $scope.showAlert('danger', 'Erro ao excluir fornecedor: ' + errorMessage, 'exclamation-triangle');
                 });
         };
         
@@ -196,11 +263,10 @@ angular.module('fornecedoresApp')
             $scope.alert.show = false;
         };
 
-        // Função para limpar dados do modal quando ele for fechado
         $scope.clearModalData = function() {
             $scope.fornecedorToDelete = null;
             $scope.confirmMessage = '';
-            $scope.confirmAction = null;
+            $scope.currentFornecedorId = null;
             $scope.deletingInProgress = false;
         };
         
@@ -208,19 +274,7 @@ angular.module('fornecedoresApp')
             $location.path('/lista');
         };
         
-        $scope.testConnection = function() {
-            $scope.loading = true;
-            
-            FornecedorService.testConnection()
-                .then(function(data) {
-                    $scope.loading = false;
-                    $scope.showAlert('success', 'Conexão com a API estabelecida com sucesso!', 'check-circle');
-                })
-                .catch(function(error) {
-                    $scope.loading = false;
-                    $scope.showAlert('danger', 'Erro de conexão com a API. Verifique se o servidor está rodando.', 'exclamation-triangle');
-                });
-        };
+
         
         $scope.$on('httpError', function(event, error) {
             $scope.showAlert('danger', error.message, 'exclamation-triangle');

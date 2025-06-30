@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Globe background with gradient -->
+  <defs>
+    <radialGradient id="globeGradient" cx="0.3" cy="0.3">
+      <stop offset="0%" stop-color="#5BA3F5"/>
+      <stop offset="100%" stop-color="#2E5C8A"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="14" cy="14" r="12" fill="url(#globeGradient)" stroke="#1A4A6B" stroke-width="1"/>
+
+  <!-- Globe grid lines -->
+  <g stroke="#FFFFFF" stroke-width="1" fill="none" opacity="0.8">
+    <!-- Main vertical line -->
+    <path d="M14 2 L14 26"/>
+    <!-- Main horizontal line -->
+    <line x1="2" y1="14" x2="26" y2="14"/>
+    <!-- Curved longitude lines -->
+    <path d="M8 14 Q14 6 20 14 Q14 22 8 14"/>
+    <!-- Latitude lines -->
+    <line x1="5" y1="8" x2="23" y2="8"/>
+    <line x1="5" y1="20" x2="23" y2="20"/>
+  </g>
+
+  <!-- Cursor -->
+  <g transform="translate(19, 19)">
+    <!-- Cursor shadow -->
+    <path d="M1 1 L1 9 L3.5 7 L5 9.5 L6.5 8.5 L5 6 L8 6 Z" fill="#000000" opacity="0.4"/>
+
+    <!-- Cursor main body -->
+    <path d="M0 0 L0 8 L2.5 6 L4 8.5 L5.5 7.5 L4 5 L7 5 Z" fill="#FFFFFF" stroke="#1A4A6B" stroke-width="0.5"/>
+
+    <!-- Cursor accent -->
+    <path d="M1 1 L1 6 L2.5 5 L3.5 6.5 L4 6 L3 4 L5.5 4 Z" fill="#FF6B6B"/>
+  </g>
+</svg>
