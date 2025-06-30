@@ -2,6 +2,8 @@
 
 Sistema web para gerenciamento de fornecedores desenvolvido com **AngularJS** e **Bootstrap**, consumindo uma API REST para operações CRUD.
 
+Url base do frontend: http://localhost:3000
+
 ## 🚀 Tecnologias Utilizadas
 
 - **AngularJS 1.8.3** - Framework MVW para desenvolvimento da aplicação
